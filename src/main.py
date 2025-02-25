@@ -10,6 +10,7 @@ async def main():
     await set_bot_commands(bot)
 
     try:
+        await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)
     finally:
         await bot.session.close()
