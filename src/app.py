@@ -13,6 +13,7 @@ from src.bot.handlers.additional_keyboard import settings_button, statistics_but
 
 # Мидлвари
 from src.bot.middlewares.whitelist_middleware import WhitelistMiddleware
+from src.bot.middlewares.check_user_middleware import CheckOrCreateUserMiddleware
 
 
 def create_bot_and_dispatcher():
@@ -33,8 +34,14 @@ def create_bot_and_dispatcher():
 
     # Мидлвари
     whitelist_middleware = WhitelistMiddleware(settings.BOT_WHITELIST)
+    check_user_middleware = CheckOrCreateUserMiddleware(settings.EXTERNAL_SERVICE_API_URL)
 
     # Регистрация мидлварей
+    # Проверка или создание пользователя
+    dp.message.middleware(check_user_middleware)
+    dp.callback_query.middleware(check_user_middleware)
+
+    # Вайтлист
     dp.update.middleware(whitelist_middleware)
     dp.message.middleware(whitelist_middleware)
     dp.callback_query.middleware(whitelist_middleware)
