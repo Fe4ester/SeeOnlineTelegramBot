@@ -6,11 +6,12 @@ from aiogram.types import BotCommand
 from src.config.settings import settings
 
 # Хэндлеры
-from src.bot.handlers.system import start, help, main_menu
+from src.bot.handlers.system import start, help
 from src.bot.handlers.admin import admin
+from src.bot.handlers.menu import main_menu_handlers
 
 # Каллбеки
-from src.bot.handlers.main_menu_callbacks import add_tracked_user
+from src.bot.handlers.menu_callbacks import main_menu_callbacks
 
 # Мидлвари
 from src.bot.middlewares.whitelist_middleware import WhitelistMiddleware
@@ -22,26 +23,27 @@ def create_bot_and_dispatcher():
     dp = Dispatcher()
 
     # Регистрация хэндлеров
-
     ## system
     dp.include_router(start.router)
     dp.include_router(help.router)
     dp.include_router(admin.router)
-    dp.include_router(main_menu.router)
+
+    ## menu
+    dp.include_router(main_menu_handlers.router)
 
     # Регистрация каллбеков
-    dp.include_router(add_tracked_user.router)
+    dp.include_router(main_menu_callbacks.router)
 
     # Мидлвари
     whitelist_middleware = WhitelistMiddleware(settings.BOT_WHITELIST)
     check_user_middleware = CheckOrCreateUserMiddleware(settings.EXTERNAL_SERVICE_API_URL)
 
     # Регистрация мидлварей
-    # Проверка или создание пользователя
+    ## Проверка или создание пользователя
     dp.message.middleware(check_user_middleware)
     dp.callback_query.middleware(check_user_middleware)
 
-    # Вайтлист
+    ## Вайтлист
     dp.update.middleware(whitelist_middleware)
     dp.message.middleware(whitelist_middleware)
     dp.callback_query.middleware(whitelist_middleware)
