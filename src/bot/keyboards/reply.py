@@ -10,11 +10,10 @@ def _create_keyboard(buttons: list[list[str]], resize: bool = True) -> ReplyKeyb
     return kb_builder.as_markup(resize_keyboard=resize)
 
 
-def get_main_keyboard() -> ReplyKeyboardMarkup:
+def get_menu_reply_keyboard() -> ReplyKeyboardMarkup:
     """Главное меню (95% времени у пользователя)"""
     return _create_keyboard([
-        ["👁 Мои отслеживания", "➕ Добавить пользователя"],
-        ["🛠 Дополнительно"]
+        ["Меню"]
     ])
 
 
