@@ -1,5 +1,5 @@
 from aiogram.types import Message
-from src.services.external_service_client import SeeOnlineAPI
+from src.services.tracker_service_client import SeeOnlineAPI
 
 from src.config.settings import settings
 

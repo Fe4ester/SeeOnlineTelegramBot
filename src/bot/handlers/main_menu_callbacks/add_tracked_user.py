@@ -7,7 +7,7 @@ from src.bot.states.main_menu_states import AddTrackedUserStates
 
 from src.bot.keyboards.inline import get_add_tracked_user_inline_keyboard
 
-from src.services.external_service_client import SeeOnlineAPI, SeeOnlineAPIError
+from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 
 from src.config.settings import settings
 

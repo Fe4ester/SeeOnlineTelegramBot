@@ -2,7 +2,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message
 from typing import Any, Awaitable, Callable, Dict
 
-from src.services.external_service_client import SeeOnlineAPI
+from src.services.tracker_service_client import SeeOnlineAPI
 
 
 class CheckOrCreateUserMiddleware(BaseMiddleware):
