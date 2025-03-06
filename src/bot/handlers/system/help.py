@@ -3,7 +3,7 @@ from aiogram.types import Message
 from aiogram.filters import Command
 
 # Тексты
-from src.bot.texts.system_texts import help_text
+from src.bot.answers.system_answers import help_text
 
 router = Router()
 

@@ -5,8 +5,8 @@ from aiogram.types import Message
 from aiogram.filters import Command
 
 # Тексты
-from src.bot.texts.system_texts import start_text
-from src.bot.texts.menu_text import get_main_menu_text
+from src.bot.answers.system_answers import start_text
+from src.bot.answers.menu_answers import get_main_menu_text
 
 # Клавиатуры
 from src.bot.keyboards.inline import get_menu_inline_keyboard

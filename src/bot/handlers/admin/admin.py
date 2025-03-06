@@ -3,7 +3,7 @@ from aiogram.types import Message
 from aiogram.filters import Command
 
 # Тексты
-from src.bot.texts.admin_texsts import admin_command_text
+from src.bot.answers.admin_answers import admin_command_text
 
 router = Router()
 
