@@ -1,6 +1,6 @@
 import aiohttp
 import urllib.parse
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, Optional, Union, List, Type
 
 from pydantic import BaseModel
 
@@ -24,7 +24,7 @@ class SeeOnlineAPIError(Exception):
 class SeeOnlineAPI:
     """
     Клиент для взаимодействия с "Tracker API", c поддержкой контекстного менеджера
-    и валидацией ответов через Pydantic.
+    и валидацией ответов через Pydantic
     """
 
     def __init__(self, base_url: str) -> None:
@@ -59,7 +59,8 @@ class SeeOnlineAPI:
         async with self._session.request(method=method.upper(), url=url, json=data) as response:
             return await self._handle_response(response)
 
-    async def _handle_response(self, response: aiohttp.ClientResponse) -> Any:
+    @staticmethod
+    async def _handle_response(response: aiohttp.ClientResponse) -> Any:
         """
         Если статус-код в диапазоне 2xx:
           - Если 204 No Content, возвращаем None
@@ -104,13 +105,10 @@ class SeeOnlineAPI:
                 url += "?" + urllib.parse.urlencode(filtered_params)
         return url
 
-    # ----------------------------------------------------------------
-    # Вспомогательный метод для валидации (Pydantic, V2)
-    # ----------------------------------------------------------------
+    @staticmethod
     def _parse_as(
-            self,
             raw_json: Any,
-            schema_class: BaseModel,
+            schema_class: Type[BaseModel],
             many: bool = False
     ) -> Union[BaseModel, List[BaseModel], None]:
         """
