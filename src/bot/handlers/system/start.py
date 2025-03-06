@@ -9,7 +9,7 @@ from src.bot.answers.system_answers import start_text
 from src.bot.answers.menu_answers import get_main_menu_text
 
 # Клавиатуры
-from src.bot.keyboards.inline import get_menu_inline_keyboard
+from src.bot.keyboards.inline import get_main_menu_keyboard
 
 router = Router()
 
@@ -24,6 +24,6 @@ async def cmd_start(message: Message):
     await message.answer(
         await get_main_menu_text(message),
         parse_mode='HTML',
-        reply_markup=get_menu_inline_keyboard(),
+        reply_markup=get_main_menu_keyboard(),
 
     )
