@@ -2,13 +2,20 @@ from aiogram.types import CallbackQuery, Message
 from aiogram import Router
 from aiogram import F
 
+# Работа с состояниями
 from aiogram.fsm.context import FSMContext
 from src.bot.states.main_menu_states import AddTrackedUserStates
 
-from src.bot.keyboards.inline import get_add_tracked_user_inline_keyboard
+# Клавиатуры
+from src.bot.keyboards.inline import back_inline_keyboard, get_main_menu_keyboard
 
+# Сервисы
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 
+# Ответы
+from src.bot.answers.menu_answers import get_main_menu_text, unavailable_answer, full_tracked_user_cells_answer, send_username_answer
+
+# Настройки
 from src.config.settings import settings
 
 router = Router()
@@ -29,15 +36,15 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
 
             if telegram_user.current_users >= telegram_user.max_users:
                 await callback.answer(
-                    text="У вас достигнут лимит отслеживаемых пользователей!",
+                    text=full_tracked_user_cells_answer,
                     show_alert=True
                 )
                 return
 
             # Если места хватает, говорим пользователю, что нужно ввести username
             await callback.message.edit_text(
-                text="Отправьте юзернейм (без @) того, кого хотите отслеживать:",
-                reply_markup=get_add_tracked_user_inline_keyboard()
+                text=send_username_answer,
+                reply_markup=back_inline_keyboard()
             )
             # Устанавливаем состояние:
             await state.set_state(AddTrackedUserStates.waiting_for_username)
@@ -45,7 +52,18 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
 
         except SeeOnlineAPIError as e:
             await callback.answer(
-                text=f"Недоступно, попробуйте позже",
+                text=unavailable_answer,
                 show_alert=True
             )
             return
+
+
+@router.callback_query(F.data == "cancel", AddTrackedUserStates.waiting_for_username)
+async def cancel_callback(callback: CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    await callback.message.answer(
+        text=await get_main_menu_text(callback.from_user.id),
+        parse_mode='html',
+        reply_markup=get_main_menu_keyboard()
+    )
+    await state.clear()
