@@ -11,7 +11,7 @@ from src.bot.handlers.admin import admin
 from src.bot.handlers.menu import main_menu_handlers
 
 # Каллбеки
-from src.bot.handlers.menu_callbacks import main_menu_callbacks
+from src.bot.handlers.menu_callbacks import main_menu_callbacks, general_callbacks
 
 # Мидлвари
 from src.bot.middlewares.whitelist_middleware import WhitelistMiddleware
@@ -33,6 +33,7 @@ def create_bot_and_dispatcher():
 
     # Регистрация каллбеков
     dp.include_router(main_menu_callbacks.router)
+    dp.include_router(general_callbacks.router)
 
     # Мидлвари
     whitelist_middleware = WhitelistMiddleware(settings.BOT_WHITELIST)
