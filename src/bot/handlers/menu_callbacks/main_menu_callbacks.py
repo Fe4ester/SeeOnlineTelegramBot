@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from src.bot.states.main_menu_states import AddTrackedUserStates
 
 # Клавиатуры
-from src.bot.keyboards.inline import back_keyboard
+from src.bot.keyboards.inline import back_keyboard, get_tracked_users_menu_keyboard
 
 # Сервисы
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
@@ -67,5 +67,6 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
 async def tracked_users_menu_callback(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         text=await get_tracked_users_menu_text(callback.from_user.id),
-        parse_mode='html'
+        parse_mode='html',
+        reply_markup=get_tracked_users_menu_keyboard()
     )

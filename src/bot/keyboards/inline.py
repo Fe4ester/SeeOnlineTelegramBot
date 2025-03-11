@@ -1,7 +1,4 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup
 
 
@@ -24,8 +21,9 @@ def get_tracked_users_menu_keyboard() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardBuilder()
 
 
-    keyboard.button(text="📊 Получить график", callback_data="add_tracked_user")
-    keyboard.button(text="📋 ", callback_data="tracked_users_menu")
+    keyboard.button(text="📊 Получить график", callback_data="get_tracked_user_diagram")
+    keyboard.button(text="🗑️ Удалить пользователя", callback_data="delete_tracked_user")
+    keyboard.button(text="🔙 Назад", callback_data="cancel")
 
     keyboard.adjust(1)
 
@@ -34,7 +32,7 @@ def get_tracked_users_menu_keyboard() -> InlineKeyboardMarkup:
 
 def back_keyboard():
     keyboard = InlineKeyboardBuilder()
-    keyboard.button(text='Назад', callback_data='cancel')
+    keyboard.button(text='🔙 Назад', callback_data='cancel')
 
     keyboard.adjust(1)
 
