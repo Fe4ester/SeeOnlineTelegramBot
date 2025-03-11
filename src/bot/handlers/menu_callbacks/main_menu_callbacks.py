@@ -7,14 +7,13 @@ from aiogram.fsm.context import FSMContext
 from src.bot.states.main_menu_states import AddTrackedUserStates
 
 # Клавиатуры
-from src.bot.keyboards.inline import back_inline_keyboard, get_main_menu_keyboard
+from src.bot.keyboards.inline import back_keyboard
 
 # Сервисы
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 
 # Ответы
 from src.bot.answers.menu_answers import (
-    get_main_menu_text,
     unavailable_answer,
     full_tracked_user_cells_answer,
     send_username_answer,
@@ -50,7 +49,7 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
             # Если места хватает, говорим пользователю, что нужно ввести username
             await callback.message.edit_text(
                 text=send_username_answer,
-                reply_markup=back_inline_keyboard()
+                reply_markup=back_keyboard()
             )
             # Устанавливаем состояние:
             await state.set_state(AddTrackedUserStates.waiting_for_username)
@@ -70,14 +69,3 @@ async def tracked_users_menu_callback(callback: CallbackQuery, state: FSMContext
         text=await get_tracked_users_menu_text(callback.from_user.id),
         parse_mode='html'
     )
-
-
-@router.callback_query(F.data == "cancel", AddTrackedUserStates.waiting_for_username)
-async def cancel_callback(callback: CallbackQuery, state: FSMContext):
-    await callback.message.delete()
-    await callback.message.answer(
-        text=await get_main_menu_text(callback.from_user.id),
-        parse_mode='html',
-        reply_markup=get_main_menu_keyboard()
-    )
-    await state.clear()
