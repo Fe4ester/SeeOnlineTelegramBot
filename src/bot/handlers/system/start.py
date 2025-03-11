@@ -22,7 +22,7 @@ async def cmd_start(message: Message):
     )
     await asyncio.sleep(0.6)
     await message.answer(
-        await get_main_menu_text(message),
+        await get_main_menu_text(message.from_user.id),
         parse_mode='HTML',
         reply_markup=get_main_menu_keyboard(),
 
