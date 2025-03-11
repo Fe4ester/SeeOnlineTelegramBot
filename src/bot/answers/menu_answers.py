@@ -1,12 +1,10 @@
-from aiogram.types import Message
 from src.services.tracker_service_client import SeeOnlineAPI
 from src.config.settings import settings
 
 
-async def get_main_menu_text(message: Message):
+async def get_main_menu_text(user_id: int):
     async with SeeOnlineAPI(settings.EXTERNAL_SERVICE_API_URL) as api:
-        user = await api.get_telegram_user(telegram_id=message.from_user.id)
-
+        user = await api.get_telegram_user(telegram_id=user_id)
         role = user[0].role
         tracked_users = f"{user[0].current_users} / {user[0].max_users}"
 
@@ -28,3 +26,7 @@ incorrect_username_answer = message = """
 ❌ <b>Ошибка: Некорректный юзернейм!</b>"""
 
 unavailable_answer = "Недоступно, попробуйте позже"
+
+full_tracked_user_cells_answer = "У вас достигнут лимит отслеживаемых пользователей!"
+
+send_username_answer = "Отправьте юзернейм (без @)"
