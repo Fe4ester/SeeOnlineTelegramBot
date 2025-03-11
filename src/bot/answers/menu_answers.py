@@ -18,3 +18,13 @@ async def get_main_menu_text(message: Message):
         )
 
         return menu_text
+
+
+def get_successful_added_tracked_account_answer(username: str) -> str:
+    return f"Пользователь @{username} успешно добавлен в список отслеживаемых!"
+
+
+incorrect_username_answer = message = """
+❌ <b>Ошибка: Некорректный юзернейм!</b>"""
+
+unavailable_answer = "Недоступно, попробуйте позже"

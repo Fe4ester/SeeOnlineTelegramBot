@@ -23,11 +23,6 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
         try:
             # get_telegram_user может вернуть список или None, если pk=None
             users = await api.get_telegram_user(telegram_id=tg_id)
-            if not users:
-                # Если пользователя нет в БД — возможно, нужно его создать
-                # Но здесь, по условию, предположим, что user точно есть
-                await callback.answer("Кажется, вы не зарегистрированы в системе")
-                return
 
             # По вашей структуре может вернуться список, берём первый:
             telegram_user = users[0]
