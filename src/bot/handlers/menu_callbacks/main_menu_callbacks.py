@@ -13,7 +13,13 @@ from src.bot.keyboards.inline import back_inline_keyboard, get_main_menu_keyboar
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 
 # Ответы
-from src.bot.answers.menu_answers import get_main_menu_text, unavailable_answer, full_tracked_user_cells_answer, send_username_answer
+from src.bot.answers.menu_answers import (
+    get_main_menu_text,
+    unavailable_answer,
+    full_tracked_user_cells_answer,
+    send_username_answer,
+    get_tracked_users_menu_text
+)
 
 # Настройки
 from src.config.settings import settings
@@ -56,6 +62,14 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
                 show_alert=True
             )
             return
+
+
+@router.callback_query(F.data == "tracked_users_menu")
+async def tracked_users_menu_callback(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        text=await get_tracked_users_menu_text(callback.from_user.id),
+        parse_mode='html'
+    )
 
 
 @router.callback_query(F.data == "cancel", AddTrackedUserStates.waiting_for_username)

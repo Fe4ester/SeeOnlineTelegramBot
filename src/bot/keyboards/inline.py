@@ -10,7 +10,7 @@ def get_main_menu_keyboard() -> InlineKeyboardMarkup:
 
     # Основные действия
     keyboard.button(text="➕ Добавить пользователя", callback_data="add_tracked_user")
-    keyboard.button(text="📋 Кого я отслеживаю?", callback_data="get_tracked_users")
+    keyboard.button(text="📋 Кого я отслеживаю?", callback_data="tracked_users_menu")
 
     # Дополнительные опции
     keyboard.button(text="⚙️ Дополнительно", callback_data="additional")
