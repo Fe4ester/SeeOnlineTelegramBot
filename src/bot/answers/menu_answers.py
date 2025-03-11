@@ -1,100 +1,64 @@
-from src.services.tracker_service_client import SeeOnlineAPI
-from src.config.settings import settings
+MAIN_MENU_TEMPLATE = """\
+📊 <b>Статистика отслеживания</b>
+👥 <b>Пользователей:</b>
+   <code>{counter_tracked_users}</code>
 
+🎭 <b>Роль:</b> <i>{role}</i>
 
-async def get_main_menu_text(user_id: int):
-    async with SeeOnlineAPI(settings.EXTERNAL_SERVICE_API_URL) as api:
-        user = await api.get_telegram_user(telegram_id=user_id)
-        role = user[0].role
-        counter_tracked_users = f"{user[0].current_users} / {user[0].max_users}"
+➕ <b>Добавить ещё?</b>
+"""
 
-        menu_text = (
-            "📊 <b>Статистика отслеживания</b>\n"
-            f"👥 <b>Пользователей:</b>\n   <code>{counter_tracked_users}</code>\n\n"
-            f"🎭 <b>Роль:</b> <i>{role}</i>\n\n"
-            "➕ <b>Добавить ещё?</b>"
-        )
+TRACKED_USERS_MENU_TEMPLATE = """\
+📊 <b>Отслеживаемые пользователи</b>
 
-        return menu_text
+👥 <b>Пользователей:</b>
+   <code>{counter_tracked_users}</code>
 
+💼 <b>Отслеживаемые пользователи:</b>
 
-async def get_tracked_users_menu_text(user_id: int):
-    async with SeeOnlineAPI(settings.EXTERNAL_SERVICE_API_URL) as api:
-        user = await api.get_telegram_user(telegram_id=user_id)
-        counter_tracked_users = f"{user[0].current_users} / {user[0].max_users}"
+{tracked_users_str}
 
-        tracked_users = await api.get_tracked_user(telegram_user_id=user_id)
+{invisible_warning}
+"""
 
-        # Формируем список для отображения:
-        if tracked_users:
-            tracked_users_str = "\n".join(
-                [
-                    f"{idx}. @{u.username} "
-                    f"{'' if u.visible_online else '| Не отслеживаю'}"
-                    for idx, u in enumerate(tracked_users, start=1)
-                ]
-            )
-        else:
-            tracked_users_str = "Никто не отслеживается, добавь пользователя что бы я начал составлять график его онлайна!"
+INVISIBLE_USERS_WARNING = """\
+<u>⚠️ Почему не отслеживаю?
+Я не могу следить за аккаунтами со скрытым онлайном
+Такие аккаунты удаляются в течение 3 часов</u>
+"""
 
-        # Проверяем, есть ли в списке пользователи со скрытым онлайном
-        has_invisible_users = any(not u.visible_online for u in tracked_users)
-
-        # Формируем текст основного меню:
-        menu_text = (
-            "📊 <b>Отслеживаемые пользователи</b>\n\n"
-            f"👥 <b>Пользователей:</b>\n   <code>{counter_tracked_users}</code>\n\n"
-            "💼 <b>Отслеживаемые пользователи:</b>\n\n"
-            f"{tracked_users_str}\n\n"
-        )
-
-        # Добавляем предупреждение только если есть скрытые пользователи
-        if has_invisible_users:
-            menu_text += (
-                "<u>⚠️ Почему не отслеживаю?\n"
-                "Я не могу следить за аккаунтами со скрытым онлайном\n"
-                "Такие аккаунты удаляются в течение 3 часов</u>"
-            )
-
-        return menu_text
-
-
-def get_successful_added_tracked_account_answer(username: str) -> str:
-    return f"Пользователь @{username} успешно добавлен в список отслеживаемых!"
-
-
-no_tracked_users_answer = (
-    "У вас пока нет отслеживаемых пользователей"
+NO_TRACKED_USERS_MESSAGE = (
+    "Никто не отслеживается, добавь пользователя что бы я начал составлять график его онлайна!"
 )
 
-delete_user_intro_template = (
-    "🗑️ <b>Удаление пользователя</b>\n\n"
-    "Доступные к удалению пользователи:\n\n"
-    "{tracked_list_str}\n\n"
-    "<i>Напишите <b>номер</b> пользователя, которого хотите удалить</i>"
+SUCCESSFUL_ADDED_TRACKED_ACCOUNT_MESSAGE = (
+    "Пользователь @{username} успешно добавлен в список отслеживаемых!"
 )
 
-delete_user_number_not_digit_answer = (
+NO_TRACKED_USERS_ANSWER = "У вас пока нет отслеживаемых пользователей"
+FULL_TRACKED_USER_CELLS_ANSWER = "У вас достигнут лимит отслеживаемых пользователей!"
+SEND_USERNAME_ANSWER = "Отправьте юзернейм (без @)"
+UNAVAILABLE_ANSWER = "Недоступно, попробуйте позже"
+INCORRECT_USERNAME_ANSWER = "❌ <b>Ошибка: Некорректный юзернейм!</b>"
+
+DELETE_USER_INTRO_TEMPLATE = """\
+🗑️ <b>Удаление пользователя</b>
+
+Доступные к удалению пользователи:
+
+{tracked_list_str}
+
+<i>Напишите <b>номер</b> пользователя, которого хотите удалить</i>
+"""
+DELETE_USER_NUMBER_NOT_DIGIT_ANSWER = (
     "Пожалуйста, введите <b>числовой</b> номер пользователя (или нажмите Назад)."
 )
-
-delete_user_not_found_template = (
+DELETE_USER_NOT_FOUND_TEMPLATE = (
     "Нет пользователя с номером {index}. Попробуйте снова или нажмите Назад."
 )
-
-delete_user_failed_template = (
+DELETE_USER_FAILED_TEMPLATE = (
     "Не удалось удалить @{username}. Попробуйте позже."
 )
-
-delete_user_success_template = (
+DELETE_USER_SUCCESS_TEMPLATE = (
     "Пользователь @{username} успешно удалён из списка!"
 )
-
-incorrect_username_answer = message = """
-❌ <b>Ошибка: Некорректный юзернейм!</b>"""
-
-unavailable_answer = "Недоступно, попробуйте позже"
-
-full_tracked_user_cells_answer = "У вас достигнут лимит отслеживаемых пользователей!"
-
-send_username_answer = "Отправьте юзернейм (без @)"

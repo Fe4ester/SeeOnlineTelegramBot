@@ -1,9 +1,7 @@
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
-
-# Тексты
-from src.bot.answers.system_answers import help_text
+from src.bot.answers.system_answers import HELP_TEXT
 
 router = Router()
 
@@ -11,6 +9,6 @@ router = Router()
 @router.message(Command('help'))
 async def cmd_help(message: Message):
     await message.answer(
-        help_text,
+        HELP_TEXT,
         parse_mode='HTML'
     )

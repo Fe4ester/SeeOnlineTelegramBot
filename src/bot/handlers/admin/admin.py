@@ -1,13 +1,14 @@
+# src/bot/handlers/admin.py
+
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 
-# Тексты
-from src.bot.answers.admin_answers import admin_command_text
+from src.bot.answers.admin_answers import ADMIN_COMMAND_TEXT
 
 router = Router()
 
-
 @router.message(Command('admin'))
-async def cmd_help(message: Message):
-    await message.answer(admin_command_text)
+async def cmd_admin(message: Message):
+    """Команда /admin — пока заглушка."""
+    await message.answer(ADMIN_COMMAND_TEXT)
