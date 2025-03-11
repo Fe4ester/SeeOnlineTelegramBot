@@ -23,7 +23,7 @@ def get_main_menu_keyboard() -> InlineKeyboardMarkup:
 
 
 
-def get_add_tracked_user_inline_keyboard():
+def back_inline_keyboard():
     keyboard = InlineKeyboardBuilder()
     keyboard.button(text='Назад', callback_data='cancel')
 
