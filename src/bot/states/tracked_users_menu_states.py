@@ -7,3 +7,4 @@ class DeleteTrackedUserStates(StatesGroup):
 
 class GetDiagramStates(StatesGroup):
     waiting_for_user_number = State()
+    waiting_for_day_number = State()

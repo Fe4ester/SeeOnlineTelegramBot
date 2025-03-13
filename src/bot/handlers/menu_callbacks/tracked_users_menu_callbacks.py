@@ -11,7 +11,8 @@ from src.bot.states.tracked_users_menu_states import GetDiagramStates
 
 # Тексты
 from src.bot.answers.menu_answers import (
-    UNAVAILABLE_ANSWER
+    UNAVAILABLE_ANSWER,
+    NO_TRACKED_USERS_MESSAGE
 )
 
 router = Router()
@@ -62,21 +63,21 @@ async def get_tracked_user_diagram_callback(callback: CallbackQuery, state: FSMC
             )
             return
 
-    # Собираем текст для вывода списка пользователей
+    # Формируем текст со списком отслеживаемых пользователей
     text_for_user = build_tracked_users_for_diagram_text(tracked_users)
 
-    # Сохраняем список в FSM, чтобы потом пользователь выбрал номер
+    # Сохраняем список в FSM, чтобы потом пользователь выбрал
     await state.update_data(tracked_users=tracked_users)
 
     # Показываем пользователю
     await callback.message.edit_text(
         text=text_for_user,
         parse_mode="HTML",
-        reply_markup=back_keyboard()  # Кнопка «Назад» или что-то ещё
+        reply_markup=back_keyboard()
     )
 
     # Если список не пустой — переходим в состояние ожидания номера пользователя
     if tracked_users:
         await state.set_state(GetDiagramStates.waiting_for_user_number)
 
-    await callback.answer()
+    await callback.answer(NO_TRACKED_USERS_MESSAGE)
