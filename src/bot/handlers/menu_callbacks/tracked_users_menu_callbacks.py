@@ -6,7 +6,8 @@ from src.bot.states.tracked_users_menu_states import DeleteTrackedUserStates
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 from src.config.settings import settings
 from src.bot.keyboards.inline import back_keyboard
-from src.services.build_answer_services import build_delete_user_intro_text
+from src.services.build_answer_services import build_delete_user_intro_text, build_tracked_users_for_diagram_text
+from src.bot.states.tracked_users_menu_states import GetDiagramStates
 
 # Тексты
 from src.bot.answers.menu_answers import (
@@ -48,4 +49,34 @@ async def delete_tracked_user_callback(callback: CallbackQuery, state: FSMContex
 
 @router.callback_query(F.data == "get_tracked_user_diagram")
 async def get_tracked_user_diagram_callback(callback: CallbackQuery, state: FSMContext):
-    await callback.answer('Пока пусто')
+    """Обработка нажатия «Получить диаграмму (интервалы)»."""
+    user_id = callback.from_user.id
+
+    async with SeeOnlineAPI(base_url=settings.EXTERNAL_SERVICE_API_URL) as api:
+        try:
+            tracked_users = await api.get_tracked_user(telegram_user_id=user_id)
+        except SeeOnlineAPIError:
+            await callback.answer(
+                text=UNAVAILABLE_ANSWER,
+                show_alert=True
+            )
+            return
+
+    # Собираем текст для вывода списка пользователей
+    text_for_user = build_tracked_users_for_diagram_text(tracked_users)
+
+    # Сохраняем список в FSM, чтобы потом пользователь выбрал номер
+    await state.update_data(tracked_users=tracked_users)
+
+    # Показываем пользователю
+    await callback.message.edit_text(
+        text=text_for_user,
+        parse_mode="HTML",
+        reply_markup=back_keyboard()  # Кнопка «Назад» или что-то ещё
+    )
+
+    # Если список не пустой — переходим в состояние ожидания номера пользователя
+    if tracked_users:
+        await state.set_state(GetDiagramStates.waiting_for_user_number)
+
+    await callback.answer()

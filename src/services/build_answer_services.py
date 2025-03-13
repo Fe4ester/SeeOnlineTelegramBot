@@ -1,5 +1,9 @@
+from typing import List, Optional
+from datetime import datetime
+
 from src.services.tracker_service_client import SeeOnlineAPI
 from src.config.settings import settings
+from src.services.tracker_service_models import OnlineStatus, TrackedUser
 
 # Тексты
 from src.bot.answers.menu_answers import MAIN_MENU_TEMPLATE
@@ -8,7 +12,8 @@ from src.bot.answers.menu_answers import (
     INVISIBLE_USERS_WARNING,
     NO_TRACKED_USERS_MESSAGE,
     NO_TRACKED_USERS_ANSWER,
-    DELETE_USER_INTRO_TEMPLATE
+    DELETE_USER_INTRO_TEMPLATE,
+    DIAGRAM_USER_INTRO_TEMPLATE
 )
 
 
@@ -63,3 +68,64 @@ def build_delete_user_intro_text(tracked_users) -> str:
     )
 
     return DELETE_USER_INTRO_TEMPLATE.format(tracked_list_str=tracked_list_str)
+
+
+def build_tracked_users_for_diagram_text(tracked_users: List[TrackedUser]) -> str:
+    """
+    Возвращает текст со списком отслеживаемых пользователей (пронумерованных),
+    если список пуст — возвращает NO_TRACKED_USERS_ANSWER.
+    """
+    if not tracked_users:
+        return NO_TRACKED_USERS_ANSWER
+
+    tracked_list_str = "\n".join([
+        f"{idx}. @{u.username}"
+        for idx, u in enumerate(tracked_users, start=1)
+    ])
+
+    return DIAGRAM_USER_INTRO_TEMPLATE.format(tracked_list_str=tracked_list_str)
+
+
+def build_online_intervals_text(statuses: List[OnlineStatus]) -> str:
+    """
+    Преобразует список OnlineStatus в человекочитаемые интервалы:
+    «с HH:MM до HH:MM»
+    """
+    if not statuses:
+        return "Данные о времени онлайна отсутствуют."
+
+    # Сортируем статусы по created_at (на всякий случай)
+    sorted_statuses = sorted(statuses, key=lambda x: x.created_at)
+
+    intervals = []
+    current_start: Optional[datetime] = None
+
+    for st in sorted_statuses:
+        if st.is_online and current_start is None:
+            # Начинается новый онлайн-интервал
+            current_start = st.created_at
+        elif not st.is_online and current_start is not None:
+            # Закрываем интервал
+            intervals.append((current_start, st.created_at))
+            current_start = None
+
+    # Если закончились статусы, а current_start не закрыт
+    if current_start is not None:
+        # Пользователь, возможно, всё ещё онлайн,
+        # тогда фиксируем последний момент как "последний зафиксированный статус"
+        # Либо можно написать "до сейчас".
+        last_created_at = sorted_statuses[-1].created_at
+        intervals.append((current_start, last_created_at))
+
+    # Формируем строки вида "с HH:MM до HH:MM"
+    result_lines = []
+    for start_dt, end_dt in intervals:
+        start_str = start_dt.strftime("%H:%M")
+        end_str = end_dt.strftime("%H:%M")
+        result_lines.append(f"с {start_str} до {end_str}")
+
+    # Если у нас нет ни одного «закрытого» интервала, значит, пользователь никогда не был онлайн
+    if not result_lines:
+        return "За данный период не было периодов онлайн."
+
+    return "\n".join(result_lines)
