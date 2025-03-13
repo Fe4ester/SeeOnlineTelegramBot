@@ -26,8 +26,7 @@ async def delete_tracked_user_callback(callback: CallbackQuery, state: FSMContex
             tracked_users = await api.get_tracked_user(telegram_user_id=user_id)
         except SeeOnlineAPIError:
             await callback.answer(
-                text=UNAVAILABLE_ANSWER,
-                show_alert=True
+                text=UNAVAILABLE_ANSWER
             )
             return
 
@@ -45,3 +44,8 @@ async def delete_tracked_user_callback(callback: CallbackQuery, state: FSMContex
         await state.set_state(DeleteTrackedUserStates.waiting_for_user_number)
 
     await callback.answer()
+
+
+@router.callback_query(F.data == "get_tracked_user_diagram")
+async def get_tracked_user_diagram_callback(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('Пока пусто')

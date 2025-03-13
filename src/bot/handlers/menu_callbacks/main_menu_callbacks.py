@@ -31,8 +31,7 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
             telegram_user = users[0]
             if telegram_user.current_users >= telegram_user.max_users:
                 await callback.answer(
-                    text=FULL_TRACKED_USER_CELLS_ANSWER,
-                    show_alert=True
+                    text=FULL_TRACKED_USER_CELLS_ANSWER
                 )
                 return
 
@@ -46,8 +45,7 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
 
         except SeeOnlineAPIError:
             await callback.answer(
-                text=UNAVAILABLE_ANSWER,
-                show_alert=True
+                text=UNAVAILABLE_ANSWER
             )
             return
 
