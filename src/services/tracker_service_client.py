@@ -342,24 +342,6 @@ class SeeOnlineAPI:
     # OnlineStatus
     # ----------------------------
 
-    # async def get_online_status(
-    #         self,
-    #         pk: Optional[int] = None,
-    #         username: Optional[str] = None,
-    #         is_online: Optional[bool] = None
-    # ) -> Union[OnlineStatus, List[OnlineStatus], None]:
-    #     query_params = {}
-    #     if username is not None:
-    #         query_params["username"] = username
-    #     if is_online is not None:
-    #         query_params["is_online"] = str(is_online).lower()
-    #
-    #     raw = await self._request("GET", "online-statuses", pk=pk, query_params=query_params)
-    #     if pk is not None:
-    #         return self._parse_as(raw, OnlineStatus, many=False)
-    #     else:
-    #         return self._parse_as(raw, OnlineStatus, many=True)
-
     async def get_online_status(
         self,
         pk: Optional[int] = None,
