@@ -6,6 +6,8 @@ from src.bot.states.main_menu_states import AddTrackedUserStates
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 from src.config.settings import settings
 from src.services.validators import is_valid_telegram_username
+from src.bot.keyboards.inline import get_main_menu_keyboard
+from src.services.build_answer_services import build_main_menu_text
 
 # Тексты
 from src.bot.answers.menu_answers import (
@@ -49,6 +51,14 @@ async def process_tracked_user_username(msg: Message, state: FSMContext):
             # Сообщаем об успехе
             success_text = SUCCESSFUL_ADDED_TRACKED_ACCOUNT_MESSAGE.format(username=username_to_track)
             await msg.answer(success_text)
+
+            # Отправляем главное меню
+            main_menu_text = await build_main_menu_text(msg.from_user.id)
+            await msg.answer(
+                main_menu_text,
+                parse_mode='HTML',
+                reply_markup=get_main_menu_keyboard(),
+            )
 
         except SeeOnlineAPIError:
             await msg.answer(UNAVAILABLE_ANSWER)
