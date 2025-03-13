@@ -6,12 +6,11 @@ from src.bot.states.tracked_users_menu_states import DeleteTrackedUserStates
 from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 from src.config.settings import settings
 from src.bot.keyboards.inline import back_keyboard
+from src.services.build_answer_services import build_delete_user_intro_text
 
 # Тексты
 from src.bot.answers.menu_answers import (
-    UNAVAILABLE_ANSWER,
-    NO_TRACKED_USERS_ANSWER,
-    DELETE_USER_INTRO_TEMPLATE,
+    UNAVAILABLE_ANSWER
 )
 
 router = Router()
@@ -32,30 +31,17 @@ async def delete_tracked_user_callback(callback: CallbackQuery, state: FSMContex
             )
             return
 
-    if not tracked_users:
-        # Если список пуст – сообщаем и не переводим в состояние
-        await callback.message.edit_text(
-            NO_TRACKED_USERS_ANSWER,
-            reply_markup=back_keyboard()
-        )
-        await callback.answer()
-        return
+    text_for_user = build_delete_user_intro_text(tracked_users)
 
-    # Формируем пронумерованный список
-    tracked_list_str = "\n".join([
-        f"{idx}. @{u.username}" for idx, u in enumerate(tracked_users, start=1)
-    ])
-
-    text_for_user = DELETE_USER_INTRO_TEMPLATE.format(tracked_list_str=tracked_list_str)
-
-    # Сохраняем список в FSM
     await state.update_data(tracked_users=tracked_users)
 
-    # Переходим в состояние ожидания номера
     await callback.message.edit_text(
         text=text_for_user,
         parse_mode="HTML",
         reply_markup=back_keyboard()
     )
-    await state.set_state(DeleteTrackedUserStates.waiting_for_user_number)
+
+    if tracked_users:
+        await state.set_state(DeleteTrackedUserStates.waiting_for_user_number)
+
     await callback.answer()

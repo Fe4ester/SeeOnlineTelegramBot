@@ -53,7 +53,7 @@ async def add_tracked_user_callback(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data == "tracked_users_menu")
-async def tracked_users_menu_callback(callback: CallbackQuery, state: FSMContext):
+async def tracked_users_menu_callback(callback: CallbackQuery):
     """Обработка нажатия «Отслеживаемые пользователи»."""
     text = await build_tracked_users_menu_text(callback.from_user.id)
     await callback.message.edit_text(

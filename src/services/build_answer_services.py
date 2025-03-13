@@ -6,7 +6,9 @@ from src.bot.answers.menu_answers import MAIN_MENU_TEMPLATE
 from src.bot.answers.menu_answers import (
     TRACKED_USERS_MENU_TEMPLATE,
     INVISIBLE_USERS_WARNING,
-    NO_TRACKED_USERS_MESSAGE
+    NO_TRACKED_USERS_MESSAGE,
+    NO_TRACKED_USERS_ANSWER,
+    DELETE_USER_INTRO_TEMPLATE
 )
 
 
@@ -46,3 +48,18 @@ async def build_tracked_users_menu_text(user_id: int) -> str:
         tracked_users_str=tracked_users_str,
         invisible_warning=invisible_warning
     )
+
+
+def build_delete_user_intro_text(tracked_users) -> str:
+    """
+    Формирует текст для сообщения, где выводится список
+    пользователей (пронумерованных).
+    """
+    if not tracked_users:
+        return NO_TRACKED_USERS_ANSWER
+
+    tracked_list_str = "\n".join(
+        f"{idx}. @{u.username}" for idx, u in enumerate(tracked_users, start=1)
+    )
+
+    return DELETE_USER_INTRO_TEMPLATE.format(tracked_list_str=tracked_list_str)
