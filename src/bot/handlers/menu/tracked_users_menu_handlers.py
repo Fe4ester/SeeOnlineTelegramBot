@@ -20,7 +20,8 @@ from src.bot.answers.menu_answers import (
     DELETE_USER_NOT_FOUND_TEMPLATE,
     DELETE_USER_FAILED_TEMPLATE,
     DELETE_USER_SUCCESS_TEMPLATE,
-    UNAVAILABLE_ANSWER
+    UNAVAILABLE_ANSWER,
+    NO_TRACKING_DATA
 )
 
 router = Router()
@@ -120,7 +121,14 @@ async def process_get_user_diagram_number(message: Message, state: FSMContext):
         # Переходим к состоянию ожидания номера дня
         await state.set_state(GetDiagramStates.waiting_for_day_number)
     else:
-        # Если нет ни одной даты, можно сразу завершить или предложить вернуться в меню
+        await message.answer(NO_TRACKING_DATA)
+
+        new_text = await build_tracked_users_menu_text(message.from_user.id)
+        await message.answer(
+            text=new_text,
+            parse_mode="HTML",
+            reply_markup=get_tracked_users_menu_keyboard()
+        )
         await state.clear()
 
 

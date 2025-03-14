@@ -45,7 +45,7 @@ async def delete_tracked_user_callback(callback: CallbackQuery, state: FSMContex
     if tracked_users:
         await state.set_state(DeleteTrackedUserStates.waiting_for_user_number)
 
-    await callback.answer()
+    await callback.answer(NO_TRACKED_USERS_MESSAGE)
 
 
 @router.callback_query(F.data == "get_tracked_user_diagram")
