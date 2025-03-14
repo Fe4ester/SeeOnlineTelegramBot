@@ -1,5 +1,5 @@
 from aiogram import Router
-from aiogram.types import Message
+from aiogram.types import Message, BufferedInputFile
 from aiogram.fsm.context import FSMContext
 
 from src.bot.states.tracked_users_menu_states import DeleteTrackedUserStates
@@ -7,11 +7,11 @@ from src.services.tracker_service_client import SeeOnlineAPI, SeeOnlineAPIError
 from src.config.settings import settings
 from src.bot.keyboards.inline import get_tracked_users_menu_keyboard, back_keyboard
 from src.bot.states.tracked_users_menu_states import GetDiagramStates
+from src.services.build_chart_service import create_day_online_chart
 from src.services.build_answer_services import (
     build_tracked_users_menu_text,
     group_statuses_by_day,
-    build_day_list_text,
-    build_online_intervals_text
+    build_day_list_text
 )
 
 # Тексты
@@ -137,7 +137,6 @@ async def process_get_user_diagram_day(message: Message, state: FSMContext):
     """Пользователь выбирает дату, по которой хочет получить интервалы."""
     user_input = message.text.strip()
     if not user_input.isdigit():
-        # Можно использовать ту же константу или завести отдельную
         await message.answer(USER_NUMBER_NOT_DIGIT_ANSWER, parse_mode="HTML")
         return
 
@@ -157,16 +156,29 @@ async def process_get_user_diagram_day(message: Message, state: FSMContext):
     chosen_day = days[index - 1]
     day_statuses = statuses_by_day[chosen_day]
 
-    intervals_text = build_online_intervals_text(day_statuses)
-
     username = user_to_show.username if user_to_show else "???"
-    header = f"<b>Статистика онлайна @{username} за {chosen_day}</b>\n\n"
 
-    await message.answer(
-        header + intervals_text,
-        parse_mode="HTML"
+    # 1) Генерируем картинку в памяти (BytesIO)
+    chart_buf = create_day_online_chart(
+        day_statuses=day_statuses,
+        chosen_day_str=chosen_day,
+        username=username
     )
 
+    # 2) Превращаем BytesIO в BufferedInputFile для aiogram 3.x
+    chart_data = chart_buf.getvalue()  # достаём «сырые» байты
+    photo_file = BufferedInputFile(
+        chart_data,
+        filename="chart.png"  # нужно любое имя файла
+    )
+
+    # 3) Отправляем «файл»
+    await message.answer_photo(
+        photo=photo_file,
+        caption=f"Статистика онлайна @{username} за {chosen_day}"
+    )
+
+    # Показываем (или обновляем) меню
     new_text = await build_tracked_users_menu_text(message.from_user.id)
     await message.answer(
         text=new_text,

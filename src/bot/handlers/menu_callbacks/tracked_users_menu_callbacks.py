@@ -80,4 +80,4 @@ async def get_tracked_user_diagram_callback(callback: CallbackQuery, state: FSMC
     if tracked_users:
         await state.set_state(GetDiagramStates.waiting_for_user_number)
 
-    await callback.answer(NO_TRACKED_USERS_MESSAGE)
+    await callback.answer()
