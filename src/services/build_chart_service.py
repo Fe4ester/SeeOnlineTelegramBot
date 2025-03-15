@@ -13,10 +13,9 @@ def time_to_float(time_obj):
 def create_day_online_chart(day_statuses, chosen_day_str: str, username: str) -> io.BytesIO:
     """
     Рисует «расписание» онлайна за конкретный день (chosen_day_str)
-    для пользователя (username) на основе списка day_statuses (список объектов).
+    для пользователя (username) на основе списка day_statuses.
     Возвращает BytesIO (PNG-картинка).
     """
-
     # Сортируем статусы по дате/времени
     day_statuses = sorted(day_statuses, key=lambda s: s.created_at)
 
@@ -35,46 +34,46 @@ def create_day_online_chart(day_statuses, chosen_day_str: str, username: str) ->
     day_start = day_dt.replace(hour=0, minute=0, second=0, microsecond=0)
     day_end = day_dt.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-    # Собираем интервалы (start, end, is_online).
-    # Логика почти та же, что и раньше, но нам нужны лишь интервалы онлайн
+    # Собираем интервалы (start, end, is_online), но пока все подряд
     intervals = []
     current_state = day_statuses[0].is_online
     current_time = max(day_start, day_statuses[0].created_at)
 
     for i in range(1, len(day_statuses)):
         next_time = day_statuses[i].created_at
+
+        # Ограничиваем верхнюю границу сутками
         if next_time > day_end:
             next_time = day_end
+
         intervals.append((current_time, next_time, current_state))
+
         current_state = day_statuses[i].is_online
         current_time = day_statuses[i].created_at
+
+        # Если ушли за пределы дня — дальше смотреть не нужно
         if current_time > day_end:
             break
 
-    # Закрываем «хвост» дня, если осталось время
-    if current_time < day_end:
+    # Закрываем «хвост» дня. Раньше мы всегда добавляли, даже если current_state = True,
+    # что создавало артефакт зелёной зоны до конца суток. Теперь добавляем
+    # только если нужен "офлайновый" или вы точно хотите отображать онлайн до полуночи.
+    if current_time < day_end and not current_state:
         intervals.append((current_time, day_end, current_state))
 
-    # Теперь преобразуем интервалы, оставив только «онлайн» (is_online = True),
-    # потому что для «онлайна» мы будем рисовать зелёные полосы
+    # Отбираем только «онлайн»-интервалы (is_online = True)
     online_periods = []
     for (start_dt, end_dt, is_online) in intervals:
-        if is_online:
-            # Переведём в локальные time-объекты (чтобы time_to_float сработал)
-            # или просто берём время из UTC — не столь важно, так как на графике 0-24
+        if is_online and start_dt < end_dt:
+            # Преобразуем к "час . десять" через time()
             start_local_time = start_dt.replace(tzinfo=None).time()
             end_local_time = end_dt.replace(tzinfo=None).time()
             online_periods.append((start_local_time, end_local_time))
 
-    # Формируем структуру «periods_by_day», где ключ – это день
-    # (хотя здесь у нас только один день)
-    periods_by_day = {chosen_day_str: online_periods}
-
-    # *** Далее идёт отрисовка в стиле «новой» функции ***
-
+    # --- Рисуем график ---
     fig, ax = plt.subplots(figsize=(16, 4))
 
-    # Общий интервал времени
+    # Общий интервал 0..24
     start_time = 0
     end_time = 24
 
@@ -82,7 +81,7 @@ def create_day_online_chart(day_statuses, chosen_day_str: str, username: str) ->
     fig.patch.set_facecolor('#f0f0f0')  # Светло-серый фон «всей» области
     ax.set_facecolor('#ffffff')  # Белый фон «основного» полотна
 
-    # Красный полупрозрачный фон для "офлайна"
+    # Красный полупрозрачный фон для "офлайна" (длина = 24 часа, высота = 0.3)
     ax.add_patch(
         FancyBboxPatch(
             (start_time, 0.3),
@@ -96,40 +95,38 @@ def create_day_online_chart(day_statuses, chosen_day_str: str, username: str) ->
         )
     )
 
-    # Подсчитываем общее время «в сети»
+    # Подсчитываем общее время «в сети», одновременно рисуем «зелёные» полосы
     total_online_hours = 0.0
-    for day_key, periods in periods_by_day.items():
-        for (start_t, end_t) in periods:
-            start_float = time_to_float(start_t)
-            end_float = time_to_float(end_t)
-            total_online_hours += (end_float - start_float)
+    for (start_t, end_t) in online_periods:
+        start_float = time_to_float(start_t)
+        end_float = time_to_float(end_t)
 
-            # Зелёные зоны «онлайн»
-            ax.add_patch(
-                FancyBboxPatch(
-                    (start_float, 0.3),
-                    end_float - start_float,
-                    0.3,
-                    boxstyle="round,pad=0.03",
-                    edgecolor='none',
-                    facecolor='#77DD77',
-                    alpha=0.9,
-                    zorder=2
-                )
+        total_online_hours += (end_float - start_float)
+
+        # Зелёные зоны «онлайн» поверх красного
+        ax.add_patch(
+            FancyBboxPatch(
+                (start_float, 0.3),
+                end_float - start_float,
+                0.3,
+                boxstyle="round,pad=0.03",
+                edgecolor='none',
+                facecolor='#77DD77',
+                alpha=0.9,
+                zorder=2
             )
+        )
 
     # Настройки осей
     ax.set_xlim(start_time, end_time)
     ax.set_ylim(0, 1)
-
     ax.yaxis.set_visible(False)
-
     ax.set_xticks(np.arange(0, 25, 1))
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda val, pos: f'{int(val):02d}'))
     ax.set_xlabel("Время суток", color='#333333', fontsize=12, fontweight='bold')
     ax.tick_params(axis='x', colors='#333333', length=6)
 
-    # Рисуем вертикальные линии
+    # Рисуем вертикальные линии (часовые)
     ax.grid(False)
     for i in range(25):
         ax.axvline(x=i, color='#cccccc', linestyle='-', zorder=0, linewidth=0.7)
@@ -140,10 +137,10 @@ def create_day_online_chart(day_statuses, chosen_day_str: str, username: str) ->
     ax.spines['left'].set_visible(False)
     ax.spines['bottom'].set_color('#666666')
 
-    # Вывод имени пользователя
+    # Имя пользователя
     plt.text(-2, 1.2, username, color='#333333', fontsize=16, ha='left', va='center', fontweight='bold')
 
-    # Вывод общего времени в сети
+    # Подпись общего времени онлайн
     total_hours_formatted = f"{int(total_online_hours)} ч {int((total_online_hours % 1) * 60)} мин"
     plt.text(
         12, 1.2,
@@ -156,7 +153,7 @@ def create_day_online_chart(day_statuses, chosen_day_str: str, username: str) ->
         bbox=dict(facecolor='#eeeeee', edgecolor='none', boxstyle='round,pad=0.5')
     )
 
-    # Водяной знак
+    # «Водяной знак»
     plt.text(25.5, 1.2, 'SeeOnlineBot', color='#999999', fontsize=14, ha='right', va='center', alpha=0.6)
 
     # Дата
