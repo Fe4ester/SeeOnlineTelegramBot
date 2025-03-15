@@ -1,21 +1,16 @@
-from typing import List, Dict, Optional
+from typing import List, Dict
 from collections import defaultdict
-from datetime import datetime
 
 from src.services.tracker_service_client import SeeOnlineAPI
 from src.config.settings import settings
-from src.services.tracker_service_models import OnlineStatus, TrackedUser
+from src.services.tracker_service_models import OnlineStatus
 
 # Тексты
 from src.bot.answers.menu_answers import MAIN_MENU_TEMPLATE
 from src.bot.answers.menu_answers import (
     TRACKED_USERS_MENU_TEMPLATE,
     INVISIBLE_USERS_WARNING,
-    NO_TRACKED_USERS_MESSAGE,
-    NO_TRACKED_USERS_ANSWER,
-    DELETE_USER_INTRO_TEMPLATE,
-    DIAGRAM_USER_INTRO_TEMPLATE,
-    PICK_DAY_INTRO_TEMPLATE
+    NO_TRACKED_USERS_MESSAGE
 )
 
 
@@ -57,36 +52,6 @@ async def build_tracked_users_menu_text(user_id: int) -> str:
     )
 
 
-def build_delete_user_intro_text(tracked_users) -> str:
-    """
-    Формирует текст для сообщения, где выводится список
-    пользователей (пронумерованных).
-    """
-    if not tracked_users:
-        return NO_TRACKED_USERS_ANSWER
-
-    tracked_list_str = "\n".join(
-        f"{idx}. @{u.username}" for idx, u in enumerate(tracked_users, start=1)
-    )
-
-    return DELETE_USER_INTRO_TEMPLATE.format(tracked_list_str=tracked_list_str)
-
-
-def build_tracked_users_for_diagram_text(tracked_users: List[TrackedUser]) -> str:
-    """
-    Возвращает текст со списком отслеживаемых пользователей (пронумерованных),
-    если список пуст — возвращает NO_TRACKED_USERS_ANSWER.
-    """
-    if not tracked_users:
-        return NO_TRACKED_USERS_ANSWER
-
-    tracked_list_str = "\n".join([
-        f"{idx}. @{u.username}"
-        for idx, u in enumerate(tracked_users, start=1)
-    ])
-
-    return DIAGRAM_USER_INTRO_TEMPLATE.format(tracked_list_str=tracked_list_str)
-
 
 def group_statuses_by_day(statuses: List[OnlineStatus]) -> Dict[str, List[OnlineStatus]]:
     """
@@ -100,54 +65,3 @@ def group_statuses_by_day(statuses: List[OnlineStatus]) -> Dict[str, List[Online
         grouped[day_str].append(st)
     return dict(grouped)
 
-
-def build_day_list_text(days: List[str]) -> str:
-    """
-    Строим пронумерованный список доступных дат.
-    Если days пуст, возвращаем сообщение, что нет данных.
-    """
-    if not days:
-        return "Нет доступных дат для отображения статистики."
-
-    lines = [f"{idx}. {day}" for idx, day in enumerate(days, start=1)]
-    day_list_str = "\n".join(lines)
-
-    return PICK_DAY_INTRO_TEMPLATE.format(day_list_str=day_list_str)
-
-
-def build_online_intervals_text(statuses: List[OnlineStatus]) -> str:
-    """
-    Преобразует список OnlineStatus в человекочитаемые интервалы: «с HH:MM до HH:MM».
-    """
-    if not statuses:
-        return "Данные о времени онлайна отсутствуют."
-
-    sorted_statuses = sorted(statuses, key=lambda x: x.created_at)
-    intervals = []
-    current_start: Optional[datetime] = None
-
-    for st in sorted_statuses:
-        if st.is_online and current_start is None:
-            # Начало онлайн-интервала
-            current_start = st.created_at
-        elif not st.is_online and current_start is not None:
-            # Конец онлайн-интервала
-            intervals.append((current_start, st.created_at))
-            current_start = None
-
-    # Если остался незакрытый интервал
-    if current_start is not None:
-        last_created_at = sorted_statuses[-1].created_at
-        intervals.append((current_start, last_created_at))
-
-    # Формируем строки «с HH:MM до HH:MM»
-    result_lines = []
-    for start_dt, end_dt in intervals:
-        start_str = start_dt.strftime("%H:%M")
-        end_str = end_dt.strftime("%H:%M")
-        result_lines.append(f"с {start_str} до {end_str}")
-
-    if not result_lines:
-        return "За выбранный день не было периодов онлайн."
-
-    return "\n".join(result_lines)
