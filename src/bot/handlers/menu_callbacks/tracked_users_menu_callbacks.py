@@ -46,11 +46,11 @@ async def delete_tracked_user_callback(callback: CallbackQuery):
         try:
             tracked_users = await api.get_tracked_user(telegram_user_id=user_id)
         except SeeOnlineAPIError:
-            await callback.answer(text=UNAVAILABLE_ANSWER, show_alert=True)
+            await callback.answer(text=UNAVAILABLE_ANSWER)
             return
 
     if not tracked_users:
-        await callback.answer(text=NO_TRACKED_USERS_MESSAGE, show_alert=True)
+        await callback.answer(text=NO_TRACKED_USERS_MESSAGE)
         return
 
     kb = build_delete_user_keyboard(tracked_users)
@@ -70,7 +70,7 @@ async def ask_delete_user_callback(callback: CallbackQuery):
     """
     data = callback.data.split(":")
     if len(data) != 2:
-        await callback.answer(INVALID_DATA_FORMAT, show_alert=True)
+        await callback.answer(INVALID_DATA_FORMAT)
         return
 
     tracked_user_id = data[1]
@@ -80,10 +80,10 @@ async def ask_delete_user_callback(callback: CallbackQuery):
         try:
             tu = await api.get_tracked_user(pk=int(tracked_user_id))
             if not tu:
-                await callback.answer(USER_NOT_FOUND, show_alert=True)
+                await callback.answer(USER_NOT_FOUND)
                 return
         except SeeOnlineAPIError:
-            await callback.answer(UNAVAILABLE_ANSWER, show_alert=True)
+            await callback.answer(UNAVAILABLE_ANSWER)
             return
 
     username = tu.username
@@ -104,7 +104,7 @@ async def confirm_delete_user_callback(callback: CallbackQuery):
     """
     data = callback.data.split(":")
     if len(data) != 2:
-        await callback.answer(INVALID_DATA_FORMAT, show_alert=True)
+        await callback.answer(INVALID_DATA_FORMAT)
         return
 
     tracked_user_id = data[1]
@@ -115,17 +115,17 @@ async def confirm_delete_user_callback(callback: CallbackQuery):
         try:
             tu = await api.get_tracked_user(pk=int(tracked_user_id))
             if not tu:
-                await callback.answer(USER_NOT_FOUND, show_alert=True)
+                await callback.answer(USER_NOT_FOUND)
                 return
 
             username = tu.username
             try:
                 await api.delete_tracked_user(pk=int(tracked_user_id))
             except SeeOnlineAPIError:
-                await callback.answer(DELETE_USER_FAILED_TEMPLATE.format(username=username), show_alert=True)
+                await callback.answer(DELETE_USER_FAILED_TEMPLATE.format(username=username))
                 return
         except SeeOnlineAPIError:
-            await callback.answer(UNAVAILABLE_ANSWER, show_alert=True)
+            await callback.answer(UNAVAILABLE_ANSWER)
             return
 
     # Успешно удалили
@@ -169,11 +169,11 @@ async def get_tracked_user_diagram_callback(callback: CallbackQuery):
         try:
             tracked_users = await api.get_tracked_user(telegram_user_id=user_id)
         except SeeOnlineAPIError:
-            await callback.answer(text=UNAVAILABLE_ANSWER, show_alert=True)
+            await callback.answer(text=UNAVAILABLE_ANSWER)
             return
 
     if not tracked_users:
-        await callback.answer(text=NO_TRACKED_USERS_MESSAGE, show_alert=True)
+        await callback.answer(text=NO_TRACKED_USERS_MESSAGE)
         return
 
     # Делаем кнопки "График @username"
@@ -195,7 +195,7 @@ async def choose_day_for_diagram(callback: CallbackQuery):
     """
     data = callback.data.split(":")
     if len(data) != 2:
-        await callback.answer(INVALID_DATA_FORMAT, show_alert=True)
+        await callback.answer(INVALID_DATA_FORMAT)
         return
 
     tracked_user_id = data[1]
@@ -206,7 +206,7 @@ async def choose_day_for_diagram(callback: CallbackQuery):
         try:
             statuses = await api.get_online_status(tracked_user=int(tracked_user_id))
         except SeeOnlineAPIError:
-            await callback.answer(UNAVAILABLE_ANSWER, show_alert=True)
+            await callback.answer(UNAVAILABLE_ANSWER)
             return
 
         # Группируем
@@ -243,7 +243,7 @@ async def get_diagram_for_day(callback: CallbackQuery):
     """
     data = callback.data.split(":")
     if len(data) != 3:
-        await callback.answer(INVALID_DATA_FORMAT, show_alert=True)
+        await callback.answer(INVALID_DATA_FORMAT)
         return
 
     _, user_id_str, day_str = data
@@ -255,7 +255,7 @@ async def get_diagram_for_day(callback: CallbackQuery):
         try:
             tu = await api.get_tracked_user(pk=int(user_id_str))
             if not tu:
-                await callback.answer(USER_NOT_FOUND, show_alert=True)
+                await callback.answer(USER_NOT_FOUND)
                 return
             statuses = await api.get_online_status(
                 tracked_user=int(user_id_str),
@@ -263,7 +263,7 @@ async def get_diagram_for_day(callback: CallbackQuery):
                 created_at_before=f"{day_str} 23:59:59"
             )
         except SeeOnlineAPIError:
-            await callback.answer(UNAVAILABLE_ANSWER, show_alert=True)
+            await callback.answer(UNAVAILABLE_ANSWER)
             return
 
     if not statuses:
