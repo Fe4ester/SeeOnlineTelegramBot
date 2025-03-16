@@ -1,5 +1,4 @@
 import io
-import locale
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime, timezone
@@ -7,11 +6,11 @@ from matplotlib.patches import Rectangle, PathPatch, Patch
 from matplotlib.path import Path
 from typing import List, Any
 
-# Устанавливаем локаль для корректного отображения месяца
-try:
-    locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-except locale.Error:
-    locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+# Определяем русские названия месяцев (без использования locale)
+RUSSIAN_MONTHS = {
+    1: 'Января', 2: 'Февраля', 3: 'Марта', 4: 'Апреля', 5: 'Мая', 6: 'Июня',
+    7: 'Июля', 8: 'Августа', 9: 'Сентября', 10: 'Октября', 11: 'Ноября', 12: 'Декабря'
+}
 
 # Определяем цветовые палитры для тёмной и светлой тем
 DARK_PALETTE = {
@@ -171,10 +170,8 @@ def _create_day_online_chart(day_statuses: List[Any], chosen_day_str: str, usern
         ax.spines[spine].set_visible(False)
     ax.spines["bottom"].set_color(palette["AXES_EDGE_COLOR"])
 
-    # Форматирование даты (например, "15 Март")
-    formatted_date = day_dt.strftime("%d %B")
-
-    # Подписи
+    # Форматирование даты с русским названием месяца через словарь
+    formatted_date = f"{day_dt.day:02d} {RUSSIAN_MONTHS.get(day_dt.month, day_dt.strftime('%B'))}"
     ax.text(0.02, 0.95, username,
             transform=ax.transAxes,
             fontsize=16,
@@ -209,7 +206,6 @@ def _create_day_online_chart(day_statuses: List[Any], chosen_day_str: str, usern
               fontsize=12,
               frameon=False)
 
-    # Сохраняем график в буфер
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight')
     plt.close(fig)
