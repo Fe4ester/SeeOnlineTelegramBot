@@ -16,7 +16,7 @@ from src.services.build_answer_services import (
     build_tracked_users_menu_text,
     group_statuses_by_day
 )
-from src.services.build_chart_service import create_day_online_chart
+from src.services.build_chart_service import create_day_online_chart_light
 
 # Тексты
 from src.bot.answers.menu_answers import (
@@ -280,7 +280,7 @@ async def get_diagram_for_day(callback: CallbackQuery):
         return
 
     # Генерируем картинку
-    chart_buf = create_day_online_chart(
+    chart_buf = create_day_online_chart_light(
         day_statuses=statuses,
         chosen_day_str=day_str,
         username=tu.username
