@@ -35,6 +35,8 @@ class TelegramUser(BaseModel):
 
     telegram_id: int
     role: str = "user"
+    timezone: str = "UTC"
+    theme: str = "light"
     current_users: int = 0
     max_users: int = 5
 
